@@ -51,7 +51,7 @@ func newFlags() *flags {
 
 	f.IntVar(&f.Config.MaxEpochs, "epochs", 100, "Maximum training epochs.")
 
-	f.IntVar(&f.Config.TrainingSetStart, "ts-start", 0, "Training set split start.")
+	f.IntVar(&f.Config.TrainingSetStart, "ts-start", 480000, "Training set split start.")
 	f.IntVar(&f.Config.TrainingSetStop, "ts-stop", -432000, "Training set split stop.")
 	f.IntVar(&f.Config.TrainingSetNY, "ts-ny", 8192, "Training set nx.")
 
