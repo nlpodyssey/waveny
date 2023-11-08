@@ -26,7 +26,9 @@ Key technical constraints include:
 
 * Sole support for the WaveNet model.
 * Support limited to a 48kHz sample rate.
-* Requirement for WAVE files to be PCM 48kHz/24-bit for training or reamping.
+* Requirement for WAVE files to be PCM 48kHz 24-bit mono, for training or
+  reamping.
+* Training on CPU only.
 
 Future updates will address these limitations.
 
@@ -46,7 +48,7 @@ The single executable allows to run different sub-commands, in this form:
 waveny COMMAND [arguments...]
 ```
 
-Run `waveny help` to see a list of the available commands. Here is a recap:
+Run `waveny help` to see a list of available commands. Here is a recap:
 
 * `train`: train a new WaveNet model using SpaGO.
 * `process-spago`: process a WAVE file using a pre-trained WaveNet SpaGO model,
@@ -63,6 +65,122 @@ For detailed usage and arguments of each command, execute:
 ```shell
 waveny COMMAND -h
 ```
+
+The following sections illustrate several use cases.
+
+#### Training
+
+To train a new WaveNet SpaGO model from scratch, we first need to prepare
+some files.
+
+* A clean/unprocessed audio file (WAVE PCM 48kHz 24-bit mono). You are free to
+  create or record your own. However, [neural-amp-modeler] Python project
+  comes with a set of standardized files: see [this section](https://github.com/sdatkinson/neural-amp-modeler/blob/v0.7.3/README.md#standardized-reamping-files)
+  from the README. We recomment to use v3.0.0.
+* A "reamped" target audio file (same format as above), that is, the audio
+  signal from the previous file processed through the real amp or pedal that
+  you want to emulate.
+* A JSON configuration that describes structure and shapes of the WaveNet model.
+  A good starting point is this [wavenet.json](https://github.com/sdatkinson/neural-amp-modeler/blob/v0.7.3/bin/train/inputs/models/wavenet.json)
+  file from NAM Python project.
+
+Clean and reamped files must have the same size and be perfectly aligned.
+Their coupled audio content will be split into a training set and a validation
+set: the splitting points can be specified with dedicated command line
+arguments. If you are using NAM standardized reamping file
+[v3_0_0.wav](https://drive.google.com/file/d/1Pgf8PdE0rKB1TD4TRPKbpNo1ByR3IOm9/view?usp=drive_link),
+then the default values are already a good fit.
+
+Please have a look at the output of `waveny train -h` to learn about additional
+arguments.
+
+Here is a minimal example:
+
+```shell
+waveny train \
+  -config path/to/wavenet.json \
+  -input path/to/v3_0_0.wav \
+  -target path/to/v3_0_0_reamped.wav \
+  -out path/to/output-folder/
+```
+
+A new sub-folder, named with the current time-stamp, is created under the
+specified output path. Here, at the end of each training epoch, a checkpoint
+SpaGO model file is created. Loss values are shown for each epoch, and
+they also become part of the checkpoint file names, for convenience. 
+
+You can stop the training manually at any moment with Ctrl+C.
+
+When you are satisfied with the accuracy, pick the best model file from
+the output folder, and see further steps described below.
+
+#### Process an audio file with pre-trained models
+
+##### Loading a SpaGO model
+
+You can use a pre-trained Waveny SpaGO model to process an audio file.
+
+Get or record a "clean" audio file (WAVE PCM 48kHz 24-bit mono), choose
+your preferred model, and run:
+
+```shell
+waveny process-spago \
+  -input path/to/input.wav \
+  -output path/to/output.wav \
+  -model path/to/waveny.model
+```
+
+This command creates the output WAVE file, processing your input with the
+given amp/pedal emulation model.
+
+##### Loading a PyTorch model, running with SpaGO
+
+If you trained a WaveNet model with [neural-amp-modeler] Python project,
+you can use another command to load a PyTorch/Lightning model/checkpoint file,
+convert it into a corresponding SpaGO model (on-the-fly, in memory), and
+process an input file just like we did above. In this case, you also need the
+accompanying WaveNet JSON model-data description. For example:
+
+```shell
+waveny process-torch \
+  -input path/to/input.wav \
+  -output path/to/output.wav \
+  -config path/to/config_model.json \
+  -model path/torch_model.ckpt
+```
+
+##### Loading a NAM model, running with Waveny custom implementation
+
+There is yet another way to process an audio file. This time, we are going to
+provide a model in NAM "exported" JSON format. This is the most common format
+used to share NAM models, intended to work with existing NAM audio plugins.
+
+An amazing source for pre-trained models in this special format is [ToneHunt]
+website. Download your desired amp/pedal emulation model, and make sure
+it uses WaveNet architecture. Then run:
+
+```shell
+waveny process-rt \
+  -input path/to/input.wav \
+  -output path/to/output.wav \
+  -model path/to/model.nam
+```
+
+The "rt" suffix in the command name indicates that we are using a custom
+WaveNet DSP processor. This implementation is most suitable for real-time
+processing, a topic discussed in the next section.
+
+#### Process audio in real-time
+
+The same kind of NAM models involved in our last example can also be used for
+real-time processing. Plug in your musical instrument, and run:
+
+```shell
+waveny live -model path/to/model.nam
+```
+
+This command uses Waveny custom WaveNet implementation to process audio input
+in real-time. I/O is possible thanks to [PortAudio].
 
 ### Library Integration
 
