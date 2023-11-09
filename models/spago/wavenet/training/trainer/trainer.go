@@ -24,7 +24,6 @@ import (
 	"github.com/nlpodyssey/waveny/models/spago/wavenet/training/datasets"
 	"os"
 	"path/filepath"
-	"runtime"
 )
 
 type Config struct {
@@ -95,12 +94,9 @@ func (t *Trainer) trainBatches() {
 		i++
 
 		loss := t.model.TrainingStep(batch)
-		runtime.GC()
-
 		if err := ag.Backward(loss); err != nil {
 			panic(fmt.Errorf("backpropagation failed: %w", err))
 		}
-		runtime.GC()
 
 		if err := t.optimizer.Optimize(); err != nil {
 			panic(fmt.Errorf("optimization failed: %w", err))
@@ -114,7 +110,6 @@ func (t *Trainer) validate() (maxMSELoss, maxESRLoss float32) {
 	i := 0
 	t.validationDataLoader.Iterate(func(batch datasets.XYDataPair) {
 		mseLoss, esrLoss := t.model.ValidationStep(batch)
-		runtime.GC()
 
 		logf("✓ (%d) MSE=%g ESR=%g\n", i, mseLoss, esrLoss)
 		if mseLoss > maxMSELoss || i == 0 {
