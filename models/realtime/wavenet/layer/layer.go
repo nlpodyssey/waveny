@@ -15,10 +15,10 @@
 package layer
 
 import (
+	"github.com/nlpodyssey/waveny/floatreader"
 	"github.com/nlpodyssey/waveny/models/realtime/activations"
 	"github.com/nlpodyssey/waveny/models/realtime/conv1d"
 	"github.com/nlpodyssey/waveny/models/realtime/conv1x1"
-	"github.com/nlpodyssey/waveny/models/realtime/floatreader"
 	"github.com/nlpodyssey/waveny/models/realtime/mat"
 )
 

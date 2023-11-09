@@ -16,7 +16,7 @@ package wavenet
 
 import (
 	"fmt"
-	"github.com/nlpodyssey/waveny/models/realtime/floatreader"
+	"github.com/nlpodyssey/waveny/floatreader"
 	"github.com/nlpodyssey/waveny/models/realtime/mat"
 	"github.com/nlpodyssey/waveny/models/realtime/wavenet/layerarray"
 )

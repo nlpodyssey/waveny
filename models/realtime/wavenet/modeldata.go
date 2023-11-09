@@ -17,7 +17,7 @@ package wavenet
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/nlpodyssey/waveny/models/realtime/floatreader"
+	"github.com/nlpodyssey/waveny/floatreader"
 	"os"
 )
 

@@ -15,7 +15,7 @@
 package conv1d
 
 import (
-	"github.com/nlpodyssey/waveny/models/realtime/floatreader"
+	"github.com/nlpodyssey/waveny/floatreader"
 	"github.com/nlpodyssey/waveny/models/realtime/mat"
 )
 
