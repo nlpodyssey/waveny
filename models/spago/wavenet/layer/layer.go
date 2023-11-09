@@ -19,6 +19,7 @@ import (
 	"github.com/nlpodyssey/spago/mat"
 	"github.com/nlpodyssey/spago/nn"
 	"github.com/nlpodyssey/spago/nn/activation"
+	"github.com/nlpodyssey/waveny/floats"
 	"github.com/nlpodyssey/waveny/models/spago/conv1d"
 	"github.com/nlpodyssey/waveny/models/spago/conv1x1"
 )
@@ -109,4 +110,10 @@ func (m *Model) ResetParameters() {
 	m.Conv.ResetParameters()
 	m.InputMixer.ResetParameters()
 	m.Conv1x1.ResetParameters()
+}
+
+func (m *Model) ExportParams(w *floats.Writer) {
+	m.Conv.ExportParams(w)
+	m.InputMixer.ExportParams(w)
+	m.Conv1x1.ExportParams(w)
 }

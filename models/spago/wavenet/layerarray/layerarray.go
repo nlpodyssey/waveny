@@ -18,6 +18,8 @@ import (
 	"github.com/nlpodyssey/spago/ag"
 	"github.com/nlpodyssey/spago/mat"
 	"github.com/nlpodyssey/spago/nn"
+	"github.com/nlpodyssey/waveny/floats"
+	rtlayerarray "github.com/nlpodyssey/waveny/models/realtime/wavenet/layerarray"
 	"github.com/nlpodyssey/waveny/models/spago/conv1d"
 	"github.com/nlpodyssey/waveny/models/spago/wavenet/layer"
 )
@@ -115,4 +117,26 @@ func (m *Model) ResetParameters() {
 	for _, l := range m.Layers {
 		l.ResetParameters()
 	}
+}
+
+func (m *Model) ExportConfig() rtlayerarray.Config {
+	return rtlayerarray.Config{
+		InputSize:     m.Config.InputSize,
+		ConditionSize: m.Config.ConditionSize,
+		HeadSize:      m.Config.HeadSize,
+		Channels:      m.Config.Channels,
+		KernelSize:    m.Config.KernelSize,
+		Dilations:     m.Config.Dilations,
+		Activation:    m.Config.Activation,
+		Gated:         m.Config.Gated,
+		HeadBias:      m.Config.HeadBias,
+	}
+}
+
+func (m *Model) ExportParams(w *floats.Writer) {
+	m.Rechannel.ExportParams(w)
+	for _, l := range m.Layers {
+		l.ExportParams(w)
+	}
+	m.HeadRechannel.ExportParams(w)
 }

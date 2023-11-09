@@ -18,6 +18,7 @@ import (
 	"github.com/nlpodyssey/spago/ag"
 	"github.com/nlpodyssey/spago/mat"
 	"github.com/nlpodyssey/spago/nn"
+	"github.com/nlpodyssey/waveny/floats"
 	"github.com/nlpodyssey/waveny/models/spago/initializations"
 	"math"
 )
@@ -100,5 +101,28 @@ func (m *Model) ResetParameters() {
 		fanIn := m.InChannels * m.KernelSize
 		bound := 1 / math.Sqrt(float64(fanIn))
 		initializations.InitUniform(m.Bias, -bound, bound)
+	}
+}
+
+func (m *Model) ExportParams(w *floats.Writer) {
+	if len(m.Weights) > 0 {
+		shape := m.Weights[0].Shape()
+		outChannels := shape[0]
+		inChannels := shape[1]
+
+		for i := 0; i < outChannels; i++ {
+			for j := 0; j < inChannels; j++ {
+				for k := range m.Weights {
+					w.Write(m.Weights[k].At(i, j).Item().F32())
+				}
+			}
+		}
+	}
+
+	if m.Bias != nil {
+		size := m.Bias.Size()
+		for i := 0; i < size; i++ {
+			w.Write(m.Bias.At(i).Item().F32())
+		}
 	}
 }

@@ -15,12 +15,18 @@
 package wavenet
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/nlpodyssey/spago/ag"
 	"github.com/nlpodyssey/spago/losses"
 	"github.com/nlpodyssey/spago/mat"
 	"github.com/nlpodyssey/spago/nn"
+	"github.com/nlpodyssey/waveny/floats"
+	rtwavenet "github.com/nlpodyssey/waveny/models/realtime/wavenet"
+	rtlayerarray "github.com/nlpodyssey/waveny/models/realtime/wavenet/layerarray"
 	"github.com/nlpodyssey/waveny/models/spago/wavenet/layerarray"
 	"github.com/nlpodyssey/waveny/models/spago/wavenet/training/datasets"
+	"os"
 )
 
 // A Config specifies the configuration for instantiating a new WaveNet Model.
@@ -123,4 +129,58 @@ func computeESRLoss(preds, targets mat.Tensor) mat.Tensor {
 			ag.ReduceMean(ag.Square(targets)),
 		),
 	)
+}
+
+func (m *Model) ExportConfig() rtwavenet.Config {
+	return rtwavenet.Config{
+		HeadScale: m.HeadScale.Item().F32(),
+		Head:      nil,
+		Layers:    m.exportLayersConfig(),
+	}
+}
+
+func (m *Model) exportLayersConfig() []rtlayerarray.Config {
+	cs := make([]rtlayerarray.Config, len(m.Layers))
+	for i, l := range m.Layers {
+		cs[i] = l.ExportConfig()
+	}
+	return cs
+}
+
+func (m *Model) ExportParams(w *floats.Writer) {
+	for _, l := range m.Layers {
+		l.ExportParams(w)
+	}
+	w.Write(m.HeadScale.Item().F32())
+}
+
+func (m *Model) ExportModelData() rtwavenet.ModelData {
+	w := floats.NewWriter()
+	m.ExportParams(w)
+	return rtwavenet.ModelData{
+		Version:      "0.5.2",
+		Architecture: "WaveNet",
+		Config:       m.ExportConfig(),
+		Weights:      w.Floats(),
+	}
+}
+
+func (m *Model) ExportModelDataFile(name string) (err error) {
+	modelData := m.ExportModelData()
+
+	file, err := os.Create(name)
+	if err != nil {
+		return fmt.Errorf("failed to open file %q: %w", name, err)
+	}
+	defer func() {
+		if e := file.Close(); e != nil && err == nil {
+			err = fmt.Errorf("failed to close file %q: %w", name, err)
+		}
+	}()
+
+	enc := json.NewEncoder(file)
+	if err = enc.Encode(modelData); err != nil {
+		return fmt.Errorf("JSON encoding to model data file %q failed: %w", name, err)
+	}
+	return nil
 }
