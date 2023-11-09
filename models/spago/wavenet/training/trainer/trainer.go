@@ -130,11 +130,14 @@ func (t *Trainer) validate() (maxMSELoss, maxESRLoss float32) {
 }
 
 func (t *Trainer) saveCheckpoint(epoch int, mseLoss, esrLoss float32) {
-	name := fmt.Sprintf("checkpoint-epoch-%04d-mse-%g-esr-%g.model", epoch, mseLoss, esrLoss)
+	name := fmt.Sprintf("checkpoint-epoch-%04d-mse-%g-esr-%g", epoch, mseLoss, esrLoss)
 	logf("🖫 %s", name)
 
-	path := filepath.Join(t.rootDirPath, name)
-	if err := nn.DumpToFile(t.model, path); err != nil {
+	base := filepath.Join(t.rootDirPath, name)
+	if err := nn.DumpToFile(t.model, base+".spago"); err != nil {
+		panic(fmt.Errorf("failed to dump model: %w", err))
+	}
+	if err := t.model.ExportModelDataFile(base + ".nam"); err != nil {
 		panic(fmt.Errorf("failed to dump model: %w", err))
 	}
 }
