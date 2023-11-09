@@ -37,14 +37,19 @@ func (m Matrix) SetZero() {
 //
 //go:nosplit
 func Product(a, b, c Matrix) {
-	for i := 0; i < c.rows; i++ {
+	bViewFromColumn := b.viewFromColumn
+	bDataColumns := b.dataColumns
+	bData := b.data
+	cRows := c.rows
+	for i := 0; i < cRows; i++ {
 		aRow := a.getRow(i)
 		cRow := c.getRow(i)
 		for j := range cRow {
 			v := float32(0)
-			bOffset := b.viewFromColumn + j
-			for k, aValue := range aRow {
-				v += aValue * b.data[k*b.dataColumns+bOffset]
+			bOffset := bViewFromColumn + j
+			for _, aValue := range aRow {
+				v += aValue * bData[bOffset]
+				bOffset += bDataColumns
 			}
 			cRow[j] = v
 		}
@@ -55,14 +60,19 @@ func Product(a, b, c Matrix) {
 //
 //go:nosplit
 func AddProduct(a, b, c Matrix) {
-	for i := 0; i < c.rows; i++ {
+	bViewFromColumn := b.viewFromColumn
+	bDataColumns := b.dataColumns
+	bData := b.data
+	cRows := c.rows
+	for i := 0; i < cRows; i++ {
 		aRow := a.getRow(i)
 		cRow := c.getRow(i)
 		for j := range cRow {
 			v := cRow[j]
-			bOffset := b.viewFromColumn + j
-			for k, aValue := range aRow {
-				v += aValue * b.data[k*b.dataColumns+bOffset]
+			bOffset := bViewFromColumn + j
+			for _, aValue := range aRow {
+				v += aValue * bData[bOffset]
+				bOffset += bDataColumns
 			}
 			cRow[j] = v
 		}
