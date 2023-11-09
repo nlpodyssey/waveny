@@ -15,7 +15,7 @@
 package conv1x1
 
 import (
-	"github.com/nlpodyssey/waveny/floatreader"
+	"github.com/nlpodyssey/waveny/floats"
 	"github.com/nlpodyssey/waveny/models/realtime/mat"
 )
 
@@ -46,7 +46,7 @@ func (m *Model) GetOutChannels() int {
 	return m.weight.Rows()
 }
 
-func (m *Model) SetParams(params *floatreader.Reader) {
+func (m *Model) SetParams(params *floats.Reader) {
 	for i := 0; i < m.weight.Rows(); i++ {
 		for j := 0; j < m.weight.Columns(); j++ {
 			m.weight.Set(i, j, params.Next())

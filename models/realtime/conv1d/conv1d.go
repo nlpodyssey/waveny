@@ -15,7 +15,7 @@
 package conv1d
 
 import (
-	"github.com/nlpodyssey/waveny/floatreader"
+	"github.com/nlpodyssey/waveny/floats"
 	"github.com/nlpodyssey/waveny/models/realtime/mat"
 )
 
@@ -58,7 +58,7 @@ func makeBias(config Config) mat.Vector {
 	return mat.NewVector(config.OutChannels)
 }
 
-func (m *Model) SetParams(params *floatreader.Reader) {
+func (m *Model) SetParams(params *floats.Reader) {
 	if len(m.weight) > 0 {
 		outChannels := m.weight[0].Rows()
 		inChannels := m.weight[0].Columns()

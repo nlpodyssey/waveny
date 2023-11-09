@@ -17,7 +17,7 @@ package wavenet
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/nlpodyssey/waveny/floatreader"
+	"github.com/nlpodyssey/waveny/floats"
 	"os"
 )
 
@@ -33,7 +33,7 @@ func LoadFromJSONModelDataFile(filename string) (*Model, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read JSON model data from file %q: %w", filename, err)
 	}
-	model, err := New(modelData.Config, floatreader.NewReader(modelData.Weights))
+	model, err := New(modelData.Config, floats.NewReader(modelData.Weights))
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize WaveNet from JSON configuration: %w", err)
 	}

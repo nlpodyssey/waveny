@@ -15,7 +15,7 @@
 package layer
 
 import (
-	"github.com/nlpodyssey/waveny/floatreader"
+	"github.com/nlpodyssey/waveny/floats"
 	"github.com/nlpodyssey/waveny/models/realtime/activations"
 	"github.com/nlpodyssey/waveny/models/realtime/conv1d"
 	"github.com/nlpodyssey/waveny/models/realtime/conv1x1"
@@ -97,7 +97,7 @@ func (l *Layer) GetKernelSize() int {
 	return l.frontConv.GetKernelSize()
 }
 
-func (l *Layer) SetParams(params *floatreader.Reader) {
+func (l *Layer) SetParams(params *floats.Reader) {
 	l.frontConv.SetParams(params)
 	l.inputMixin.SetParams(params)
 	l.postConv.SetParams(params)

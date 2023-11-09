@@ -15,7 +15,7 @@
 package layerarray
 
 import (
-	"github.com/nlpodyssey/waveny/floatreader"
+	"github.com/nlpodyssey/waveny/floats"
 	"github.com/nlpodyssey/waveny/models/realtime/conv1x1"
 	"github.com/nlpodyssey/waveny/models/realtime/mat"
 	"github.com/nlpodyssey/waveny/models/realtime/wavenet/layer"
@@ -127,7 +127,7 @@ func (la *LayerArray) rewindBuffers() {
 	la.bufferStart = start
 }
 
-func (la *LayerArray) SetParams(params *floatreader.Reader) {
+func (la *LayerArray) SetParams(params *floats.Reader) {
 	la.rechannel.SetParams(params)
 	for _, l := range la.layers {
 		l.SetParams(params)

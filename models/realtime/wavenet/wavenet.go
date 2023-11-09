@@ -16,7 +16,7 @@ package wavenet
 
 import (
 	"fmt"
-	"github.com/nlpodyssey/waveny/floatreader"
+	"github.com/nlpodyssey/waveny/floats"
 	"github.com/nlpodyssey/waveny/models/realtime/mat"
 	"github.com/nlpodyssey/waveny/models/realtime/wavenet/layerarray"
 )
@@ -37,7 +37,7 @@ type Model struct {
 	headOutput        mat.Matrix
 }
 
-func New(config Config, params *floatreader.Reader) (*Model, error) {
+func New(config Config, params *floats.Reader) (*Model, error) {
 	if config.Head != nil {
 		return nil, fmt.Errorf("head not implemented")
 	}
@@ -98,7 +98,7 @@ func (m *Model) Finalize(numFrames int) {
 	m.advanceBuffers(numFrames)
 }
 
-func (m *Model) SetParams(params *floatreader.Reader) error {
+func (m *Model) SetParams(params *floats.Reader) error {
 	for _, layerArray := range m.layerArrays {
 		layerArray.SetParams(params)
 	}
