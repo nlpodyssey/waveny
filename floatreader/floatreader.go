@@ -19,7 +19,7 @@ type Reader struct {
 	position int
 }
 
-func New(slice []float32) *Reader {
+func NewReader(slice []float32) *Reader {
 	return &Reader{
 		slice:    slice,
 		position: 0,

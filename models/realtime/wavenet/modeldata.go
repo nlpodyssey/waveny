@@ -33,7 +33,7 @@ func LoadFromJSONModelDataFile(filename string) (*Model, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read JSON model data from file %q: %w", filename, err)
 	}
-	model, err := New(modelData.Config, floatreader.New(modelData.Weights))
+	model, err := New(modelData.Config, floatreader.NewReader(modelData.Weights))
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize WaveNet from JSON configuration: %w", err)
 	}
