@@ -16,12 +16,14 @@ package mat
 
 import "math"
 
+//go:nosplit
 func Copy(destination, source Matrix) {
 	for i := 0; i < destination.rows; i++ {
 		copy(destination.getRow(i), source.getRow(i))
 	}
 }
 
+//go:nosplit
 func (m Matrix) SetZero() {
 	for i := 0; i < m.rows; i++ {
 		mRow := m.getRow(i)
@@ -32,6 +34,8 @@ func (m Matrix) SetZero() {
 }
 
 // Product computes matrix-matrix multiplication C = A * B.
+//
+//go:nosplit
 func Product(a, b, c Matrix) {
 	for i := 0; i < c.rows; i++ {
 		aRow := a.getRow(i)
@@ -48,6 +52,8 @@ func Product(a, b, c Matrix) {
 }
 
 // AddProduct adds to C the result of matrix-matrix multiplication C += A * B.
+//
+//go:nosplit
 func AddProduct(a, b, c Matrix) {
 	for i := 0; i < c.rows; i++ {
 		aRow := a.getRow(i)
@@ -64,6 +70,8 @@ func AddProduct(a, b, c Matrix) {
 }
 
 // AddInPlace performs in-place element-wise addition A += B
+//
+//go:nosplit
 func AddInPlace(a, b Matrix) {
 	for i := 0; i < a.rows; i++ {
 		aRow := a.getRow(i)
@@ -77,6 +85,8 @@ func AddInPlace(a, b Matrix) {
 
 // AddInPlaceColumnWise adds a vector V to each column of M, in place.
 // For each column c of M: M[c] += V.
+//
+//go:nosplit
 func AddInPlaceColumnWise(m Matrix, v Vector) {
 	for i := 0; i < m.rows; i++ {
 		vValue := v.Get(i)
@@ -87,6 +97,7 @@ func AddInPlaceColumnWise(m Matrix, v Vector) {
 	}
 }
 
+//go:nosplit
 func (m Matrix) TanhInPlace() {
 	for i := 0; i < m.rows; i++ {
 		mRow := m.getRow(i)
@@ -96,6 +107,7 @@ func (m Matrix) TanhInPlace() {
 	}
 }
 
+//go:nosplit
 func (m Matrix) SigmoidInPlace() {
 	for i := 0; i < m.rows; i++ {
 		mRow := m.getRow(i)
