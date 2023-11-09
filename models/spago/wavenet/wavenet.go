@@ -68,21 +68,21 @@ func computeReceptiveField(layers []*layerarray.Model) int {
 	return s
 }
 
-func (wn *Model) Forward(x mat.Tensor, padStart bool) mat.Tensor {
+func (m *Model) Forward(x mat.Tensor, padStart bool) mat.Tensor {
 	if mat.IsVector(x) {
-		return wn.forwardOne(x, padStart)
+		return m.forwardOne(x, padStart)
 	}
 	return ag.Stack(ag.Map(
 		func(t mat.Tensor) mat.Tensor {
-			return wn.forwardOne(t, padStart)
+			return m.forwardOne(t, padStart)
 		},
 		ag.RowViews(x),
 	)...)
 }
 
-func (wn *Model) forwardOne(x mat.Tensor, padStart bool) mat.Tensor {
+func (m *Model) forwardOne(x mat.Tensor, padStart bool) mat.Tensor {
 	if padStart {
-		x = ag.Concat(wn.ZeroPadding, x)
+		x = ag.Concat(m.ZeroPadding, x)
 	}
 	if x.Shape()[0] != 1 { // Always work with a row vector
 		x = ag.T(x)
@@ -90,26 +90,26 @@ func (wn *Model) forwardOne(x mat.Tensor, padStart bool) mat.Tensor {
 
 	y := x
 	headInput := mat.Tensor(nil)
-	for _, layers := range wn.Layers {
+	for _, layers := range m.Layers {
 		headInput, y = layers.Forward(y, x, headInput)
 	}
 
-	return ag.ProdScalar(headInput, wn.HeadScale)
+	return ag.ProdScalar(headInput, m.HeadScale)
 }
 
-func (wn *Model) ResetParameters() {
-	for _, layers := range wn.Layers {
+func (m *Model) ResetParameters() {
+	for _, layers := range m.Layers {
 		layers.ResetParameters()
 	}
 }
 
-func (wn *Model) TrainingStep(batch datasets.XYDataPair) mat.Tensor {
-	preds := wn.Forward(batch.X, false)
+func (m *Model) TrainingStep(batch datasets.XYDataPair) mat.Tensor {
+	preds := m.Forward(batch.X, false)
 	return losses.MSE(preds, batch.Y, true)
 }
 
-func (wn *Model) ValidationStep(batch datasets.XYDataPair) (mseLoss, esrLoss float32) {
-	preds := wn.Forward(batch.X, false)
+func (m *Model) ValidationStep(batch datasets.XYDataPair) (mseLoss, esrLoss float32) {
+	preds := m.Forward(batch.X, false)
 	mse := losses.MSE(preds, batch.Y, true)
 	esr := computeESRLoss(preds, batch.Y)
 	return mse.Item().F32(), esr.Item().F32()
