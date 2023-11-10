@@ -14,7 +14,9 @@
 
 package mat
 
-import "math"
+import (
+	"math"
+)
 
 //go:nosplit
 func Copy(destination, source Matrix) {
@@ -75,6 +77,62 @@ func AddProduct(a, b, c Matrix) {
 			cRow[j] = v
 		}
 	}
+}
+
+//go:nosplit
+func QProduct(a, b, c Matrix) {
+	a = a.Quantized()
+	b = b.Quantized()
+	c = c.asQuantized(min(a.qScale, b.qScale))
+
+	k := int32(roundF32((a.qScale * b.qScale) / c.qScale))
+
+	bDataColumns := b.dataColumns
+	bQData := b.qData
+	cRows := c.rows
+	for i := 0; i < cRows; i++ {
+		aQRow := a.getQRow(i)
+		cQRow := c.getQRow(i)
+		for j := range cQRow {
+			v := int32(0)
+			bOffset := j
+			for _, aValue := range aQRow {
+				v += int32(aValue) * int32(bQData[bOffset])
+				bOffset += bDataColumns
+			}
+			cQRow[j] = int8(clipI32(k*v, -127, 127))
+		}
+	}
+
+	c.DeQuantized()
+}
+
+//go:nosplit
+func QAddProduct(a, b, c Matrix) {
+	a = a.Quantized()
+	b = b.Quantized()
+	c = c.asQuantized(min(a.qScale, b.qScale))
+
+	k := int32(roundF32((a.qScale * b.qScale) / c.qScale))
+
+	bDataColumns := b.dataColumns
+	bQData := b.qData
+	cRows := c.rows
+	for i := 0; i < cRows; i++ {
+		aQRow := a.getQRow(i)
+		cQRow := c.getQRow(i)
+		for j := range cQRow {
+			v := int32(cQRow[j])
+			bOffset := j
+			for _, aValue := range aQRow {
+				v += int32(aValue) * int32(bQData[bOffset])
+				bOffset += bDataColumns
+			}
+			cQRow[j] = int8(clipI32(k*v, -127, 127))
+		}
+	}
+
+	c.DeQuantized()
 }
 
 // AddInPlace performs in-place element-wise addition A += B

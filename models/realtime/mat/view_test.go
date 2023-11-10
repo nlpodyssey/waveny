@@ -32,6 +32,9 @@ func TestMatrix_View(t *testing.T) {
 			110, 111, 112, 113,
 			120, 121, 122, 123,
 		},
+		qData:     make([]int8, 12),
+		quantized: false,
+		qScale:    0,
 	}, m)
 
 	vIdentity := m.View(0, 0, 3, 4)
@@ -46,6 +49,9 @@ func TestMatrix_View(t *testing.T) {
 			100, 101, 102, 103,
 			110, 111, 112, 113,
 		},
+		qData:     make([]int8, 8),
+		quantized: false,
+		qScale:    0,
 	}, vTop)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{100, 101, 102, 103},
@@ -61,6 +67,9 @@ func TestMatrix_View(t *testing.T) {
 			110, 111, 112, 113,
 			120, 121, 122, 123,
 		},
+		qData:     make([]int8, 8),
+		quantized: false,
+		qScale:    0,
 	}, vBottom)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{110, 111, 112, 113},
@@ -77,6 +86,9 @@ func TestMatrix_View(t *testing.T) {
 			110, 111, 112, 113,
 			120, 121,
 		},
+		qData:     make([]int8, 10),
+		quantized: false,
+		qScale:    0,
 	}, vLeft)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{100, 101},
@@ -94,6 +106,9 @@ func TestMatrix_View(t *testing.T) {
 			110, 111, 112, 113,
 			120, 121, 122, 123,
 		},
+		qData:     make([]int8, 10),
+		quantized: false,
+		qScale:    0,
 	}, vRight)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{102, 103},
@@ -122,6 +137,9 @@ func TestMatrix_View(t *testing.T) {
 			140, 141, 142, 143, 144, 145,
 			150, 151, 152, 153, 154, 155,
 		},
+		qData:     make([]int8, 6*6),
+		quantized: false,
+		qScale:    0,
 	}, m)
 
 	v1 := m.View(1, 1, 4, 4)
@@ -135,6 +153,9 @@ func TestMatrix_View(t *testing.T) {
 			130, 131, 132, 133, 134, 135,
 			140, 141, 142, 143, 144,
 		},
+		qData:     make([]int8, 22),
+		quantized: false,
+		qScale:    0,
 	}, v1)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{111, 112, 113, 114},
@@ -152,6 +173,9 @@ func TestMatrix_View(t *testing.T) {
 			122, 123, 124, 125,
 			130, 131, 132, 133,
 		},
+		qData:     make([]int8, 8),
+		quantized: false,
+		qScale:    0,
 	}, v2)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{122, 123},
@@ -216,6 +240,9 @@ func TestMatrix_ViewMiddleColumns(t *testing.T) {
 			110, 111, 112, 113,
 			120, 121,
 		},
+		qData:     make([]int8, 10),
+		quantized: false,
+		qScale:    0,
 	}, vLeft)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{100, 101},
@@ -233,6 +260,9 @@ func TestMatrix_ViewMiddleColumns(t *testing.T) {
 			110, 111, 112, 113,
 			120, 121, 122, 123,
 		},
+		qData:     make([]int8, 10),
+		quantized: false,
+		qScale:    0,
 	}, vRight)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{102, 103},
@@ -250,6 +280,9 @@ func TestMatrix_ViewMiddleColumns(t *testing.T) {
 			110, 111, 112, 113,
 			120, 121, 122,
 		},
+		qData:     make([]int8, 10),
+		quantized: false,
+		qScale:    0,
 	}, vMiddle)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{101, 102},

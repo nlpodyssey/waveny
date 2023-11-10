@@ -72,6 +72,10 @@ func (m *Model) SetParams(params *floats.Reader) {
 		}
 	}
 
+	for k := range m.weight {
+		m.weight[k] = m.weight[k].Quantized()
+	}
+
 	if m.hasBias {
 		for i := 0; i < m.bias.Size(); i++ {
 			m.bias.Set(i, params.Next())
@@ -111,7 +115,7 @@ func (m *Model) Process(input, output mat.Matrix, inputStartColumn, numColumns, 
 	dilation := m.dilation
 
 	offset := dilation * (1 - kernelSize)
-	mat.Product(
+	mat.QProduct(
 		weight[0],
 		input.ViewMiddleColumns(inputStartColumn+offset, numColumns),
 		output.ViewMiddleColumns(outputStartColumn, numColumns),
@@ -119,7 +123,7 @@ func (m *Model) Process(input, output mat.Matrix, inputStartColumn, numColumns, 
 
 	for k := 1; k < kernelSize; k++ {
 		offset = dilation * (k + 1 - kernelSize)
-		mat.AddProduct(
+		mat.QAddProduct(
 			weight[k],
 			input.ViewMiddleColumns(inputStartColumn+offset, numColumns),
 			output.ViewMiddleColumns(outputStartColumn, numColumns),

@@ -40,6 +40,9 @@ func TestMatrix_Clone(t *testing.T) {
 			111, 112,
 			121, 122,
 		},
+		qData:     make([]int8, 4),
+		quantized: false,
+		qScale:    0,
 	}, viewClone)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{111, 112},

@@ -16,11 +16,15 @@ package mat
 
 func (m Matrix) View(fromRow, fromColumn, numRows, numColumns int) Matrix {
 	start := fromRow*m.dataColumns + fromColumn
+	end := start + (numRows * m.dataColumns) - (m.dataColumns - numColumns)
 	return Matrix{
 		rows:        numRows,
 		dataColumns: m.dataColumns,
 		viewColumns: numColumns,
-		data:        m.data[start : start+(numRows*m.dataColumns)-(m.dataColumns-numColumns)],
+		data:        m.data[start:end],
+		qData:       m.qData[start:end],
+		quantized:   m.quantized,
+		qScale:      m.qScale,
 	}
 }
 

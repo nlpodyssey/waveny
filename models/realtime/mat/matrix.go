@@ -16,6 +16,7 @@ package mat
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -24,14 +25,21 @@ type Matrix struct {
 	dataColumns int
 	viewColumns int
 	data        []float32
+	qData       []int8
+	quantized   bool
+	qScale      float32
 }
 
 func NewMatrix(rows, columns int) Matrix {
+	size := rows * columns
 	return Matrix{
 		rows:        rows,
 		dataColumns: columns,
 		viewColumns: columns,
-		data:        make([]float32, rows*columns),
+		data:        make([]float32, size),
+		qData:       make([]int8, size),
+		quantized:   false,
+		qScale:      0,
 	}
 }
 
@@ -78,6 +86,9 @@ func (m Matrix) Clone() Matrix {
 		dataColumns: m.viewColumns,
 		viewColumns: m.viewColumns,
 		data:        data,
+		qData:       make([]int8, len(data)),
+		quantized:   false,
+		qScale:      0,
 	}
 }
 
@@ -94,11 +105,19 @@ func (m Matrix) Resize(rows, columns int) Matrix {
 
 func (m Matrix) String() string {
 	sb := strings.Builder{}
-	_, _ = fmt.Fprintf(&sb, "Matrix(%d,%d)[", m.rows, m.viewColumns)
-	for r := 0; r < m.rows; r++ {
-		_, _ = fmt.Fprintf(&sb, "\n  %g", m.getRow(r))
+	if m.quantized {
+		_, _ = fmt.Fprintf(&sb, "Matrix(%d,%d)Q(%g)[", m.rows, m.viewColumns, m.qScale)
+		for r := 0; r < m.rows; r++ {
+			_, _ = fmt.Fprintf(&sb, "\n  %d", m.getQRow(r))
+		}
+		sb.WriteString("\n]")
+	} else {
+		_, _ = fmt.Fprintf(&sb, "Matrix(%d,%d)[", m.rows, m.viewColumns)
+		for r := 0; r < m.rows; r++ {
+			_, _ = fmt.Fprintf(&sb, "\n  %g", m.getRow(r))
+		}
+		sb.WriteString("\n]")
 	}
-	sb.WriteString("\n]")
 	return sb.String()
 }
 
@@ -109,4 +128,109 @@ func (m Matrix) calcRowColumnOffset(row, column int) int {
 func (m Matrix) getRow(row int) []float32 {
 	from := row * m.dataColumns
 	return m.data[from : from+m.viewColumns]
+}
+
+func (m Matrix) getQRow(row int) []int8 {
+	from := row * m.dataColumns
+	return m.qData[from : from+m.viewColumns]
+}
+
+func (m Matrix) Quantized() Matrix {
+	if m.quantized {
+		return m
+	}
+
+	alpha := m.findAbsMax()
+	if alpha == 0 {
+		alpha = 0.001
+	}
+	s := 127 / alpha
+
+	from := 0
+	for i := 0; i < m.rows; i++ {
+		to := from + m.viewColumns
+		row := m.data[from:to]
+		qRow := m.qData[from:to]
+		from += m.dataColumns
+		_ = qRow[len(row)-1]
+
+		for j, v := range row {
+			qRow[j] = int8(clipF32(roundF32(s*v), -127, 127))
+		}
+	}
+
+	return Matrix{
+		rows:        m.rows,
+		dataColumns: m.dataColumns,
+		viewColumns: m.viewColumns,
+		data:        m.data,
+		qData:       m.qData,
+		quantized:   true,
+		qScale:      s,
+	}
+}
+
+func (m Matrix) asQuantized(s float32) Matrix {
+	return Matrix{
+		rows:        m.rows,
+		dataColumns: m.dataColumns,
+		viewColumns: m.viewColumns,
+		data:        m.data,
+		qData:       m.qData,
+		quantized:   true,
+		qScale:      s,
+	}
+}
+
+func (m Matrix) DeQuantized() Matrix {
+	s := m.qScale
+
+	from := 0
+	for i := 0; i < m.rows; i++ {
+		to := from + m.viewColumns
+		row := m.data[from:to]
+		qRow := m.qData[from:to]
+		from += m.dataColumns
+		_ = row[len(qRow)-1]
+
+		for j, v := range qRow {
+			row[j] = float32(v) / s
+		}
+	}
+
+	return Matrix{
+		rows:        m.rows,
+		dataColumns: m.dataColumns,
+		viewColumns: m.viewColumns,
+		data:        m.data,
+		qData:       m.qData,
+		quantized:   false,
+		qScale:      0,
+	}
+}
+
+func (m Matrix) findAbsMax() float32 {
+	absMax := absF32(m.Get(0, 0))
+	for r := 0; r < m.rows; r++ {
+		for _, v := range m.getRow(r) {
+			absMax = max(absMax, absF32(v))
+		}
+	}
+	return absMax
+}
+
+func absF32(v float32) float32 {
+	return float32(math.Abs(float64(v)))
+}
+
+func roundF32(v float32) float32 {
+	return float32(math.Round(float64(v)))
+}
+
+func clipF32(v, lo, hi float32) float32 {
+	return max(lo, min(hi, v))
+}
+
+func clipI32(v, lo, hi int32) int32 {
+	return max(lo, min(hi, v))
 }
