@@ -20,20 +20,20 @@ import (
 )
 
 type Matrix struct {
-	rows           int
-	dataColumns    int
-	viewFromColumn int
-	viewColumns    int
-	data           []float32
+	columns     int
+	dataRows    int
+	viewFromRow int
+	viewRows    int
+	data        []float32
 }
 
 func NewMatrix(rows, columns int) Matrix {
 	return Matrix{
-		rows:           rows,
-		dataColumns:    columns,
-		viewFromColumn: 0,
-		viewColumns:    columns,
-		data:           make([]float32, rows*columns),
+		columns:     columns,
+		dataRows:    rows,
+		viewFromRow: 0,
+		viewRows:    rows,
+		data:        make([]float32, rows*columns),
 	}
 }
 
@@ -45,17 +45,19 @@ func NewMatrixFromSlices(data [][]float32) Matrix {
 	columns := len(data[0])
 	m := NewMatrix(rows, columns)
 	for i, rowData := range data {
-		copy(m.data[i*columns:i*columns+columns], rowData)
+		for j, v := range rowData {
+			m.Set(i, j, v)
+		}
 	}
 	return m
 }
 
 func (m Matrix) Rows() int {
-	return m.rows
+	return m.viewRows
 }
 
 func (m Matrix) Columns() int {
-	return m.viewColumns
+	return m.columns
 }
 
 func (m Matrix) Set(row, column int, value float32) {
@@ -66,22 +68,33 @@ func (m Matrix) Get(row, column int) float32 {
 	return m.data[m.calcRowColumnOffset(row, column)]
 }
 
+func (m Matrix) calcRowColumnOffset(row, column int) int {
+	return column*m.dataRows + m.viewFromRow + row
+}
+
 func (m Matrix) Clone() Matrix {
-	if m.rows == 0 || m.viewColumns == 0 {
+	if m.columns == 0 || m.viewRows == 0 {
 		return Matrix{}
 	}
-	data := make([]float32, m.rows*m.viewColumns)
-	for i := 0; i < m.rows; i++ {
-		from := i * m.viewColumns
-		copy(data[from:from+m.viewColumns], m.getRow(i))
+	data := make([]float32, m.columns*m.viewRows)
+	from := 0
+	for i := 0; i < m.columns; i++ {
+		to := from + m.viewRows
+		copy(data[from:to], m.getColumn(i))
+		from = to
 	}
 	return Matrix{
-		rows:           m.rows,
-		dataColumns:    m.viewColumns,
-		viewFromColumn: 0,
-		viewColumns:    m.viewColumns,
-		data:           data,
+		columns:     m.columns,
+		dataRows:    m.viewRows,
+		viewFromRow: 0,
+		viewRows:    m.viewRows,
+		data:        data,
 	}
+}
+
+func (m Matrix) getColumn(column int) []float32 {
+	from := column*m.dataRows + m.viewFromRow
+	return m.data[from : from+m.viewRows]
 }
 
 func (m Matrix) AsVector() Vector {
@@ -89,27 +102,24 @@ func (m Matrix) AsVector() Vector {
 }
 
 func (m Matrix) Resize(rows, columns int) Matrix {
-	if m.rows == rows && m.viewColumns == columns {
+	if m.columns == columns && m.viewRows == rows {
 		return m
 	}
 	return NewMatrix(rows, columns)
 }
 
 func (m Matrix) String() string {
-	sb := strings.Builder{}
-	_, _ = fmt.Fprintf(&sb, "Matrix(%d,%d)[", m.rows, m.viewColumns)
-	for r := 0; r < m.rows; r++ {
-		_, _ = fmt.Fprintf(&sb, "\n  %g", m.getRow(r))
+	sb := new(strings.Builder)
+	_, _ = fmt.Fprintf(sb, "Matrix(%dx%d)[", m.viewRows, m.columns)
+
+	for i := 0; i < m.viewRows; i++ {
+		sb.WriteString("\n  [")
+		for j := 0; j < m.columns; j++ {
+			_, _ = fmt.Fprintf(sb, " %g", m.Get(i, j))
+		}
+		sb.WriteString(" ]")
 	}
+
 	sb.WriteString("\n]")
 	return sb.String()
-}
-
-func (m Matrix) calcRowColumnOffset(row, column int) int {
-	return row*m.dataColumns + m.viewFromColumn + column
-}
-
-func (m Matrix) getRow(row int) []float32 {
-	from := row*m.dataColumns + m.viewFromColumn
-	return m.data[from : from+m.viewColumns]
 }

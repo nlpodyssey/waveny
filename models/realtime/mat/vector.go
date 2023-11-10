@@ -33,7 +33,7 @@ func NewVectorFromSlice(data []float32) Vector {
 }
 
 func (v Vector) Size() int {
-	return v.Rows() * v.Columns()
+	return v.viewRows
 }
 
 func (v Vector) Set(index int, value float32) {

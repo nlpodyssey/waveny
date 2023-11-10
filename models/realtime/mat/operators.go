@@ -16,42 +16,27 @@ package mat
 
 import "math"
 
-//go:nosplit
-func Copy(destination, source Matrix) {
-	for i := 0; i < destination.rows; i++ {
-		copy(destination.getRow(i), source.getRow(i))
-	}
-}
-
-//go:nosplit
-func (m Matrix) SetZero() {
-	for i := 0; i < m.rows; i++ {
-		mRow := m.getRow(i)
-		for j := range mRow {
-			mRow[j] = 0
-		}
-	}
-}
-
 // Product computes matrix-matrix multiplication C = A * B.
 //
 //go:nosplit
 func Product(a, b, c Matrix) {
-	bViewFromColumn := b.viewFromColumn
-	bDataColumns := b.dataColumns
-	bData := b.data
-	cRows := c.rows
-	for i := 0; i < cRows; i++ {
-		aRow := a.getRow(i)
-		cRow := c.getRow(i)
-		for j := range cRow {
+	aViewFromRow := a.viewFromRow
+	aData := a.data
+	aDataRows := a.dataRows
+	cColumns := c.columns
+
+	for i := 0; i < cColumns; i++ {
+		bCol := b.getColumn(i)
+		cCol := c.getColumn(i)
+
+		for j := range cCol {
 			v := float32(0)
-			bOffset := bViewFromColumn + j
-			for _, aValue := range aRow {
-				v += aValue * bData[bOffset]
-				bOffset += bDataColumns
+			aOffset := aViewFromRow + j
+			for _, bValue := range bCol {
+				v += bValue * aData[aOffset]
+				aOffset += aDataRows
 			}
-			cRow[j] = v
+			cCol[j] = v
 		}
 	}
 }
@@ -60,21 +45,23 @@ func Product(a, b, c Matrix) {
 //
 //go:nosplit
 func AddProduct(a, b, c Matrix) {
-	bViewFromColumn := b.viewFromColumn
-	bDataColumns := b.dataColumns
-	bData := b.data
-	cRows := c.rows
-	for i := 0; i < cRows; i++ {
-		aRow := a.getRow(i)
-		cRow := c.getRow(i)
-		for j := range cRow {
-			v := cRow[j]
-			bOffset := bViewFromColumn + j
-			for _, aValue := range aRow {
-				v += aValue * bData[bOffset]
-				bOffset += bDataColumns
+	aViewFromRow := a.viewFromRow
+	aData := a.data
+	aDataRows := a.dataRows
+	cColumns := c.columns
+
+	for i := 0; i < cColumns; i++ {
+		bCol := b.getColumn(i)
+		cCol := c.getColumn(i)
+
+		for j := range cCol {
+			v := cCol[j]
+			aOffset := aViewFromRow + j
+			for _, bValue := range bCol {
+				v += bValue * aData[aOffset]
+				aOffset += aDataRows
 			}
-			cRow[j] = v
+			cCol[j] = v
 		}
 	}
 }
@@ -83,12 +70,12 @@ func AddProduct(a, b, c Matrix) {
 //
 //go:nosplit
 func AddInPlace(a, b Matrix) {
-	for i := 0; i < a.rows; i++ {
-		aRow := a.getRow(i)
-		bRow := b.getRow(i)
-		_ = aRow[len(bRow)-1]
-		for j, bValue := range bRow {
-			aRow[j] += bValue
+	for i := 0; i < a.columns; i++ {
+		aCol := a.getColumn(i)
+		bCol := b.getColumn(i)
+		_ = aCol[len(bCol)-1]
+		for j, bValue := range bCol {
+			aCol[j] += bValue
 		}
 	}
 }
@@ -98,31 +85,49 @@ func AddInPlace(a, b Matrix) {
 //
 //go:nosplit
 func AddInPlaceColumnWise(m Matrix, v Vector) {
-	for i := 0; i < m.rows; i++ {
-		vValue := v.Get(i)
-		mRow := m.getRow(i)
-		for j := range mRow {
-			mRow[j] += vValue
+	vCol := v.getColumn(0)
+	for i := 0; i < m.columns; i++ {
+		mCol := m.getColumn(i)
+		_ = mCol[len(vCol)-1]
+		for j, v := range vCol {
+			mCol[j] += v
 		}
 	}
 }
 
 //go:nosplit
 func (m Matrix) TanhInPlace() {
-	for i := 0; i < m.rows; i++ {
-		mRow := m.getRow(i)
-		for j, v := range mRow {
-			mRow[j] = float32(math.Tanh(float64(v)))
+	for i := 0; i < m.columns; i++ {
+		mCol := m.getColumn(i)
+		for j, v := range mCol {
+			mCol[j] = float32(math.Tanh(float64(v)))
 		}
 	}
 }
 
 //go:nosplit
 func (m Matrix) SigmoidInPlace() {
-	for i := 0; i < m.rows; i++ {
-		mRow := m.getRow(i)
-		for j, v := range mRow {
-			mRow[j] = float32(1 / (1 + math.Exp(float64(-v))))
+	for i := 0; i < m.columns; i++ {
+		mCol := m.getColumn(i)
+		for j, v := range mCol {
+			mCol[j] = float32(1 / (1 + math.Exp(float64(-v))))
 		}
+	}
+}
+
+//go:nosplit
+func (m Matrix) SetZero() {
+	for i := 0; i < m.columns; i++ {
+		mCol := m.getColumn(i)
+		for j := range mCol {
+			mCol[j] = 0
+		}
+	}
+}
+
+//go:nosplit
+func Copy(destination, source Matrix) {
+	for i := 0; i < destination.columns; i++ {
+		copy(destination.getColumn(i), source.getColumn(i))
 	}
 }

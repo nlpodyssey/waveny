@@ -14,9 +14,7 @@
 
 package mat
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestProduct(t *testing.T) {
 	testCases := []struct {

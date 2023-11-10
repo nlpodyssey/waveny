@@ -24,14 +24,15 @@ func TestMatrix_View(t *testing.T) {
 	})
 
 	requireDeepEqual(t, Matrix{
-		rows:           3,
-		dataColumns:    4,
-		viewFromColumn: 0,
-		viewColumns:    4,
+		columns:     4,
+		dataRows:    3,
+		viewFromRow: 0,
+		viewRows:    3,
 		data: []float32{
-			100, 101, 102, 103,
-			110, 111, 112, 113,
-			120, 121, 122, 123,
+			100, 110, 120,
+			101, 111, 121,
+			102, 112, 122,
+			103, 113, 123,
 		},
 	}, m)
 
@@ -40,14 +41,11 @@ func TestMatrix_View(t *testing.T) {
 
 	vTop := m.View(0, 0, 2, 4)
 	requireDeepEqual(t, Matrix{
-		rows:           2,
-		dataColumns:    4,
-		viewFromColumn: 0,
-		viewColumns:    4,
-		data: []float32{
-			100, 101, 102, 103,
-			110, 111, 112, 113,
-		},
+		columns:     4,
+		dataRows:    3,
+		viewFromRow: 0,
+		viewRows:    2,
+		data:        m.data,
 	}, vTop)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{100, 101, 102, 103},
@@ -56,14 +54,11 @@ func TestMatrix_View(t *testing.T) {
 
 	vBottom := m.View(1, 0, 2, 4)
 	requireDeepEqual(t, Matrix{
-		rows:           2,
-		dataColumns:    4,
-		viewFromColumn: 0,
-		viewColumns:    4,
-		data: []float32{
-			110, 111, 112, 113,
-			120, 121, 122, 123,
-		},
+		columns:     4,
+		dataRows:    3,
+		viewFromRow: 1,
+		viewRows:    2,
+		data:        m.data,
 	}, vBottom)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{110, 111, 112, 113},
@@ -72,14 +67,13 @@ func TestMatrix_View(t *testing.T) {
 
 	vLeft := m.View(0, 0, 3, 2)
 	requireDeepEqual(t, Matrix{
-		rows:           3,
-		dataColumns:    4,
-		viewFromColumn: 0,
-		viewColumns:    2,
+		columns:     2,
+		dataRows:    3,
+		viewFromRow: 0,
+		viewRows:    3,
 		data: []float32{
-			100, 101, 102, 103,
-			110, 111, 112, 113,
-			120, 121, 122, 123,
+			100, 110, 120,
+			101, 111, 121,
 		},
 	}, vLeft)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
@@ -90,14 +84,13 @@ func TestMatrix_View(t *testing.T) {
 
 	vRight := m.View(0, 2, 3, 2)
 	requireDeepEqual(t, Matrix{
-		rows:           3,
-		dataColumns:    4,
-		viewFromColumn: 2,
-		viewColumns:    2,
+		columns:     2,
+		dataRows:    3,
+		viewFromRow: 0,
+		viewRows:    3,
 		data: []float32{
-			100, 101, 102, 103,
-			110, 111, 112, 113,
-			120, 121, 122, 123,
+			102, 112, 122,
+			103, 113, 123,
 		},
 	}, vRight)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
@@ -116,31 +109,31 @@ func TestMatrix_View(t *testing.T) {
 	})
 
 	requireDeepEqual(t, Matrix{
-		rows:           6,
-		dataColumns:    6,
-		viewFromColumn: 0,
-		viewColumns:    6,
+		columns:     6,
+		dataRows:    6,
+		viewFromRow: 0,
+		viewRows:    6,
 		data: []float32{
-			100, 101, 102, 103, 104, 105,
-			110, 111, 112, 113, 114, 115,
-			120, 121, 122, 123, 124, 125,
-			130, 131, 132, 133, 134, 135,
-			140, 141, 142, 143, 144, 145,
-			150, 151, 152, 153, 154, 155,
+			100, 110, 120, 130, 140, 150,
+			101, 111, 121, 131, 141, 151,
+			102, 112, 122, 132, 142, 152,
+			103, 113, 123, 133, 143, 153,
+			104, 114, 124, 134, 144, 154,
+			105, 115, 125, 135, 145, 155,
 		},
 	}, m)
 
 	v1 := m.View(1, 1, 4, 4)
 	requireDeepEqual(t, Matrix{
-		rows:           4,
-		dataColumns:    6,
-		viewFromColumn: 1,
-		viewColumns:    4,
+		columns:     4,
+		dataRows:    6,
+		viewFromRow: 1,
+		viewRows:    4,
 		data: []float32{
-			110, 111, 112, 113, 114, 115,
-			120, 121, 122, 123, 124, 125,
-			130, 131, 132, 133, 134, 135,
-			140, 141, 142, 143, 144, 145,
+			101, 111, 121, 131, 141, 151,
+			102, 112, 122, 132, 142, 152,
+			103, 113, 123, 133, 143, 153,
+			104, 114, 124, 134, 144, 154,
 		},
 	}, v1)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
@@ -152,13 +145,13 @@ func TestMatrix_View(t *testing.T) {
 
 	v2 := v1.View(1, 1, 2, 2)
 	requireDeepEqual(t, Matrix{
-		rows:           2,
-		dataColumns:    6,
-		viewFromColumn: 2,
-		viewColumns:    2,
+		columns:     2,
+		dataRows:    6,
+		viewFromRow: 2,
+		viewRows:    2,
 		data: []float32{
-			120, 121, 122, 123, 124, 125,
-			130, 131, 132, 133, 134, 135,
+			102, 112, 122, 132, 142, 152,
+			103, 113, 123, 133, 143, 153,
 		},
 	}, v2)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
@@ -213,58 +206,24 @@ func TestMatrix_ViewMiddleColumns(t *testing.T) {
 		{110, 111, 112, 113},
 		{120, 121, 122, 123},
 	})
-
-	vLeft := m.ViewMiddleColumns(0, 2)
-	requireDeepEqual(t, Matrix{
-		rows:           3,
-		dataColumns:    4,
-		viewFromColumn: 0,
-		viewColumns:    2,
-		data: []float32{
-			100, 101, 102, 103,
-			110, 111, 112, 113,
-			120, 121, 122, 123,
-		},
-	}, vLeft)
-	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
-		{100, 101},
-		{110, 111},
-		{120, 121},
-	}), vLeft)
-
-	vRight := m.ViewMiddleColumns(2, 2)
-	requireDeepEqual(t, Matrix{
-		rows:           3,
-		dataColumns:    4,
-		viewFromColumn: 2,
-		viewColumns:    2,
-		data: []float32{
-			100, 101, 102, 103,
-			110, 111, 112, 113,
-			120, 121, 122, 123,
-		},
-	}, vRight)
-	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
-		{102, 103},
-		{112, 113},
-		{122, 123},
-	}), vRight)
-
-	vMiddle := m.ViewMiddleColumns(1, 2)
-	requireDeepEqual(t, Matrix{
-		rows:           3,
-		dataColumns:    4,
-		viewFromColumn: 1,
-		viewColumns:    2,
-		data: []float32{
-			100, 101, 102, 103,
-			110, 111, 112, 113,
-			120, 121, 122, 123,
-		},
-	}, vMiddle)
+	v := m.ViewMiddleColumns(1, 2)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{101, 102},
 		{111, 112},
 		{121, 122},
-	}), vMiddle)
+	}), v)
+}
+
+func TestMatrix_ViewTopRows(t *testing.T) {
+	m := NewMatrixFromSlices([][]float32{
+		{100, 101, 102, 103},
+		{110, 111, 112, 113},
+		{120, 121, 122, 123},
+		{130, 131, 132, 133},
+	})
+	v := m.ViewTopRows(2)
+	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
+		{100, 101, 102, 103},
+		{110, 111, 112, 113},
+	}), v)
 }

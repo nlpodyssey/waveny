@@ -14,41 +14,70 @@
 
 package mat
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNewVectorFromSlice(t *testing.T) {
 	testCases := []struct {
 		name     string
-		actual   Vector
+		data     []float32
 		expected Vector
 	}{
 		{
-			"nil slice",
-			NewVectorFromSlice(nil),
+			"nil",
+			nil,
 			Vector{},
 		},
 		{
-			"empty slice",
-			NewVectorFromSlice([]float32{}),
+			"empty",
+			[]float32{},
 			Vector{},
 		},
 		{
-			"slice with data",
-			NewVectorFromSlice([]float32{1, 2, 3}),
+			"scalar",
+			[]float32{42},
 			Vector{Matrix{
-				rows:           3,
-				dataColumns:    1,
-				viewFromColumn: 0,
-				viewColumns:    1,
-				data:           []float32{1, 2, 3},
+				columns:     1,
+				dataRows:    1,
+				viewFromRow: 0,
+				viewRows:    1,
+				data:        []float32{42},
+			}},
+		},
+		{
+			"size 3",
+			[]float32{1, 2, 3},
+			Vector{Matrix{
+				columns:     1,
+				dataRows:    3,
+				viewFromRow: 0,
+				viewRows:    3,
+				data:        []float32{1, 2, 3},
 			}},
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			assertMatrixEqual(t, tc.expected.Matrix, tc.actual.Matrix)
+			actual := NewVectorFromSlice(tc.data)
+			requireDeepEqual(t, tc.expected, actual)
 		})
 	}
+}
+
+func TestVector_Size(t *testing.T) {
+	v := NewVector(3)
+	if v.Size() != 3 {
+		t.Errorf("expected 3, actual %d", v.Size())
+	}
+}
+
+func TestVector_Set_Get(t *testing.T) {
+	v := NewVector(3)
+
+	v.Set(0, 100)
+	v.Set(1, 101)
+	v.Set(2, 102)
+
+	requireFloat32Equal(t, 100, v.Get(0))
+	requireFloat32Equal(t, 101, v.Get(1))
+	requireFloat32Equal(t, 102, v.Get(2))
 }
