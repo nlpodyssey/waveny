@@ -24,7 +24,7 @@ List of commands:
     Print usage information and exit.
 
   train
-    Train a new WaveNet model using SpaGO.
+    Train a new WaveNet model using SpaGO, producing both SpaGO and .nam models.
 
   process-spago
     Process a WAVE file using a pre-trained WaveNet SpaGO model,
@@ -32,7 +32,7 @@ List of commands:
 
   process-rt
     Process a WAVE file using the custom Waveny real-time-capable
-    WaveNet model, loaded from a NAM model-data JSON file.
+    WaveNet model, loaded from a .nam model-data file.
 
   process-torch
     Process a WAVE file using a WaveNet SpaGO model, loaded and converted
@@ -40,7 +40,7 @@ List of commands:
 
   live
     Process audio input in real-time using the custom Waveny WaveNet
-    model, loaded from a NAM model-data JSON file. It uses PortAudio for I/O.
+    model, loaded from a .nam model-data file. It uses PortAudio for I/O.
 
 For detailed usage and arguments of each command, execute:
 
