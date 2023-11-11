@@ -20,20 +20,18 @@ import (
 )
 
 type Matrix struct {
-	rows           int
-	dataColumns    int
-	viewFromColumn int
-	viewColumns    int
-	data           []float32
+	rows        int
+	dataColumns int
+	viewColumns int
+	data        []float32
 }
 
 func NewMatrix(rows, columns int) Matrix {
 	return Matrix{
-		rows:           rows,
-		dataColumns:    columns,
-		viewFromColumn: 0,
-		viewColumns:    columns,
-		data:           make([]float32, rows*columns),
+		rows:        rows,
+		dataColumns: columns,
+		viewColumns: columns,
+		data:        make([]float32, rows*columns),
 	}
 }
 
@@ -76,11 +74,10 @@ func (m Matrix) Clone() Matrix {
 		copy(data[from:from+m.viewColumns], m.getRow(i))
 	}
 	return Matrix{
-		rows:           m.rows,
-		dataColumns:    m.viewColumns,
-		viewFromColumn: 0,
-		viewColumns:    m.viewColumns,
-		data:           data,
+		rows:        m.rows,
+		dataColumns: m.viewColumns,
+		viewColumns: m.viewColumns,
+		data:        data,
 	}
 }
 
@@ -106,10 +103,10 @@ func (m Matrix) String() string {
 }
 
 func (m Matrix) calcRowColumnOffset(row, column int) int {
-	return row*m.dataColumns + m.viewFromColumn + column
+	return row*m.dataColumns + column
 }
 
 func (m Matrix) getRow(row int) []float32 {
-	from := row*m.dataColumns + m.viewFromColumn
+	from := row * m.dataColumns
 	return m.data[from : from+m.viewColumns]
 }

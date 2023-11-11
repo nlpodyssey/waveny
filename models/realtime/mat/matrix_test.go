@@ -33,10 +33,9 @@ func TestMatrix_Clone(t *testing.T) {
 	view := m.View(1, 1, 2, 2)
 	viewClone := view.Clone()
 	requireDeepEqual(t, Matrix{
-		rows:           2,
-		dataColumns:    2,
-		viewFromColumn: 0,
-		viewColumns:    2,
+		rows:        2,
+		dataColumns: 2,
+		viewColumns: 2,
 		data: []float32{
 			111, 112,
 			121, 122,
@@ -72,11 +71,10 @@ func TestNewMatrixFromSlices(t *testing.T) {
 				{4, 5, 6},
 			}),
 			Matrix{
-				rows:           2,
-				dataColumns:    3,
-				viewFromColumn: 0,
-				viewColumns:    3,
-				data:           []float32{1, 2, 3, 4, 5, 6},
+				rows:        2,
+				dataColumns: 3,
+				viewColumns: 3,
+				data:        []float32{1, 2, 3, 4, 5, 6},
 			},
 		},
 	}

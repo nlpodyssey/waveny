@@ -37,7 +37,6 @@ func (m Matrix) SetZero() {
 //
 //go:nosplit
 func Product(a, b, c Matrix) {
-	bViewFromColumn := b.viewFromColumn
 	bDataColumns := b.dataColumns
 	bData := b.data
 	cRows := c.rows
@@ -46,7 +45,7 @@ func Product(a, b, c Matrix) {
 		cRow := c.getRow(i)
 		for j := range cRow {
 			v := float32(0)
-			bOffset := bViewFromColumn + j
+			bOffset := j
 			for _, aValue := range aRow {
 				v += aValue * bData[bOffset]
 				bOffset += bDataColumns
@@ -60,7 +59,6 @@ func Product(a, b, c Matrix) {
 //
 //go:nosplit
 func AddProduct(a, b, c Matrix) {
-	bViewFromColumn := b.viewFromColumn
 	bDataColumns := b.dataColumns
 	bData := b.data
 	cRows := c.rows
@@ -69,7 +67,7 @@ func AddProduct(a, b, c Matrix) {
 		cRow := c.getRow(i)
 		for j := range cRow {
 			v := cRow[j]
-			bOffset := bViewFromColumn + j
+			bOffset := j
 			for _, aValue := range aRow {
 				v += aValue * bData[bOffset]
 				bOffset += bDataColumns

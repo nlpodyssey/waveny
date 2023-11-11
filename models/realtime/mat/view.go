@@ -15,23 +15,17 @@
 package mat
 
 func (m Matrix) View(fromRow, fromColumn, numRows, numColumns int) Matrix {
+	start := fromRow*m.dataColumns + fromColumn
 	return Matrix{
-		rows:           numRows,
-		dataColumns:    m.dataColumns,
-		viewFromColumn: m.viewFromColumn + fromColumn,
-		viewColumns:    numColumns,
-		data:           m.data[fromRow*m.dataColumns : (fromRow+numRows)*m.dataColumns],
+		rows:        numRows,
+		dataColumns: m.dataColumns,
+		viewColumns: numColumns,
+		data:        m.data[start : start+(numRows*m.dataColumns)-(m.dataColumns-numColumns)],
 	}
 }
 
-func (m Matrix) ViewMiddleColumns(startColumn, numColumns int) Matrix {
-	return Matrix{
-		rows:           m.rows,
-		dataColumns:    m.dataColumns,
-		viewFromColumn: m.viewFromColumn + startColumn,
-		viewColumns:    numColumns,
-		data:           m.data,
-	}
+func (m Matrix) ViewMiddleColumns(fromColumn, numColumns int) Matrix {
+	return m.View(0, fromColumn, m.rows, numColumns)
 }
 
 func (m Matrix) ViewTopRows(n int) Matrix {

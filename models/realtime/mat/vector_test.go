@@ -38,11 +38,10 @@ func TestNewVectorFromSlice(t *testing.T) {
 			"slice with data",
 			NewVectorFromSlice([]float32{1, 2, 3}),
 			Vector{Matrix{
-				rows:           3,
-				dataColumns:    1,
-				viewFromColumn: 0,
-				viewColumns:    1,
-				data:           []float32{1, 2, 3},
+				rows:        3,
+				dataColumns: 1,
+				viewColumns: 1,
+				data:        []float32{1, 2, 3},
 			}},
 		},
 	}
