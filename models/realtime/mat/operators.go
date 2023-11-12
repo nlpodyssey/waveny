@@ -14,16 +14,17 @@
 
 package mat
 
-import "math"
+import (
+	"github.com/nlpodyssey/waveny/models/realtime/mat/openblas"
+	"math"
+)
 
-//go:nosplit
 func Copy(destination, source Matrix) {
 	for i := 0; i < destination.rows; i++ {
 		copy(destination.getRow(i), source.getRow(i))
 	}
 }
 
-//go:nosplit
 func (m Matrix) SetZero() {
 	for i := 0; i < m.rows; i++ {
 		mRow := m.getRow(i)
@@ -34,52 +35,46 @@ func (m Matrix) SetZero() {
 }
 
 // Product computes matrix-matrix multiplication C = A * B.
-//
-//go:nosplit
 func Product(a, b, c Matrix) {
-	bDataColumns := b.dataColumns
-	bData := b.data
-	cRows := c.rows
-	for i := 0; i < cRows; i++ {
-		aRow := a.getRow(i)
-		cRow := c.getRow(i)
-		for j := range cRow {
-			v := float32(0)
-			bOffset := j
-			for _, aValue := range aRow {
-				v += aValue * bData[bOffset]
-				bOffset += bDataColumns
-			}
-			cRow[j] = v
-		}
-	}
+	openblas.Sgemm(
+		openblas.RowMajor,
+		openblas.NoTrans,
+		openblas.NoTrans,
+		a.rows,
+		b.viewColumns,
+		a.viewColumns,
+		1,
+		a.data,
+		a.dataColumns,
+		b.data,
+		b.dataColumns,
+		0,
+		c.data,
+		c.dataColumns,
+	)
 }
 
 // AddProduct adds to C the result of matrix-matrix multiplication C += A * B.
-//
-//go:nosplit
 func AddProduct(a, b, c Matrix) {
-	bDataColumns := b.dataColumns
-	bData := b.data
-	cRows := c.rows
-	for i := 0; i < cRows; i++ {
-		aRow := a.getRow(i)
-		cRow := c.getRow(i)
-		for j := range cRow {
-			v := cRow[j]
-			bOffset := j
-			for _, aValue := range aRow {
-				v += aValue * bData[bOffset]
-				bOffset += bDataColumns
-			}
-			cRow[j] = v
-		}
-	}
+	openblas.Sgemm(
+		openblas.RowMajor,
+		openblas.NoTrans,
+		openblas.NoTrans,
+		a.rows,
+		b.viewColumns,
+		a.viewColumns,
+		1,
+		a.data,
+		a.dataColumns,
+		b.data,
+		b.dataColumns,
+		1,
+		c.data,
+		c.dataColumns,
+	)
 }
 
 // AddInPlace performs in-place element-wise addition A += B
-//
-//go:nosplit
 func AddInPlace(a, b Matrix) {
 	for i := 0; i < a.rows; i++ {
 		aRow := a.getRow(i)
@@ -93,8 +88,6 @@ func AddInPlace(a, b Matrix) {
 
 // AddInPlaceColumnWise adds a vector V to each column of M, in place.
 // For each column c of M: M[c] += V.
-//
-//go:nosplit
 func AddInPlaceColumnWise(m Matrix, v Vector) {
 	for i := 0; i < m.rows; i++ {
 		vValue := v.Get(i)
@@ -105,7 +98,6 @@ func AddInPlaceColumnWise(m Matrix, v Vector) {
 	}
 }
 
-//go:nosplit
 func (m Matrix) TanhInPlace() {
 	for i := 0; i < m.rows; i++ {
 		mRow := m.getRow(i)
@@ -115,7 +107,6 @@ func (m Matrix) TanhInPlace() {
 	}
 }
 
-//go:nosplit
 func (m Matrix) SigmoidInPlace() {
 	for i := 0; i < m.rows; i++ {
 		mRow := m.getRow(i)

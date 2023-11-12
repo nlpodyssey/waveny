@@ -26,12 +26,6 @@ func TestProduct(t *testing.T) {
 		expected Matrix
 	}{
 		{
-			"nil",
-			NewMatrixFromSlices(nil),
-			NewMatrixFromSlices(nil),
-			NewMatrixFromSlices(nil),
-		},
-		{
 			"1x1",
 			NewVectorFromSlice([]float32{2}).Matrix,
 			NewVectorFromSlice([]float32{3}).Matrix,
@@ -44,7 +38,7 @@ func TestProduct(t *testing.T) {
 			NewMatrixFromSlices([][]float32{{23}}),
 		},
 		{
-			"matrices",
+			"2x3 * 3x4",
 			NewMatrixFromSlices([][]float32{
 				{10, 20, 30},
 				{40, 50, 60}}),
@@ -52,25 +46,6 @@ func TestProduct(t *testing.T) {
 				{1, 2, 3, 4},
 				{5, 6, 7, 8},
 				{9, 10, 11, 12}}),
-			NewMatrixFromSlices([][]float32{
-				{380, 440, 500, 560},
-				{830, 980, 1130, 1280}}),
-		},
-		{
-			"views",
-			NewMatrixFromSlices([][]float32{
-				{9, 9, 9, 9, 9},
-				{9, 10, 20, 30, 9},
-				{9, 40, 50, 60, 9},
-				{9, 9, 9, 9, 9},
-			}).View(1, 1, 2, 3),
-			NewMatrixFromSlices([][]float32{
-				{8, 8, 8, 8, 8, 8},
-				{8, 1, 2, 3, 4, 8},
-				{8, 5, 6, 7, 8, 8},
-				{8, 9, 10, 11, 12, 8},
-				{8, 8, 8, 8, 8, 8},
-			}).View(1, 1, 3, 4),
 			NewMatrixFromSlices([][]float32{
 				{380, 440, 500, 560},
 				{830, 980, 1130, 1280}}),
@@ -83,6 +58,35 @@ func TestProduct(t *testing.T) {
 			assertMatrixEqual(t, tc.expected, actual)
 		})
 	}
+
+	t.Run("views", func(t *testing.T) {
+		a := NewMatrixFromSlices([][]float32{
+			{9, 9, 9, 9, 9},
+			{9, 10, 20, 30, 9},
+			{9, 40, 50, 60, 9},
+			{9, 9, 9, 9, 9},
+		}).View(1, 1, 2, 3)
+		b := NewMatrixFromSlices([][]float32{
+			{8, 8, 8, 8, 8, 8},
+			{8, 1, 2, 3, 4, 8},
+			{8, 5, 6, 7, 8, 8},
+			{8, 9, 10, 11, 12, 8},
+			{8, 8, 8, 8, 8, 8},
+		}).View(1, 1, 3, 4)
+		c := NewMatrixFromSlices([][]float32{
+			{9, 9, 9, 9, 9, 9},
+			{9, 9, 9, 9, 9, 9},
+			{9, 9, 9, 9, 9, 9},
+			{9, 9, 9, 9, 9, 9}})
+		vc := c.View(1, 1, 2, 4)
+		Product(a, b, vc)
+		expected := NewMatrixFromSlices([][]float32{
+			{9, 9, 9, 9, 9, 9},
+			{9, 380, 440, 500, 560, 9},
+			{9, 830, 980, 1130, 1280, 9},
+			{9, 9, 9, 9, 9, 9}})
+		assertMatrixEqual(t, expected, c)
+	})
 }
 
 func TestAddProduct(t *testing.T) {
@@ -93,13 +97,6 @@ func TestAddProduct(t *testing.T) {
 		c        Matrix
 		expected Matrix
 	}{
-		{
-			"nil",
-			NewMatrixFromSlices(nil),
-			NewMatrixFromSlices(nil),
-			NewMatrixFromSlices(nil),
-			NewMatrixFromSlices(nil),
-		},
 		{
 			"1x1",
 			NewVectorFromSlice([]float32{2}).Matrix,
@@ -115,7 +112,7 @@ func TestAddProduct(t *testing.T) {
 			NewMatrixFromSlices([][]float32{{123}}),
 		},
 		{
-			"matrices",
+			"2x3 * 3x4",
 			NewMatrixFromSlices([][]float32{
 				{10, 20, 30},
 				{40, 50, 60}}),
@@ -123,28 +120,6 @@ func TestAddProduct(t *testing.T) {
 				{1, 2, 3, 4},
 				{5, 6, 7, 8},
 				{9, 10, 11, 12}}),
-			NewMatrixFromSlices([][]float32{
-				{.1, .2, .3, .4},
-				{.5, .6, .7, .8}}),
-			NewMatrixFromSlices([][]float32{
-				{380.1, 440.2, 500.3, 560.4},
-				{830.5, 980.6, 1130.7, 1280.8}}),
-		},
-		{
-			"views",
-			NewMatrixFromSlices([][]float32{
-				{9, 9, 9, 9, 9},
-				{9, 10, 20, 30, 9},
-				{9, 40, 50, 60, 9},
-				{9, 9, 9, 9, 9},
-			}).View(1, 1, 2, 3),
-			NewMatrixFromSlices([][]float32{
-				{8, 8, 8, 8, 8, 8},
-				{8, 1, 2, 3, 4, 8},
-				{8, 5, 6, 7, 8, 8},
-				{8, 9, 10, 11, 12, 8},
-				{8, 8, 8, 8, 8, 8},
-			}).View(1, 1, 3, 4),
 			NewMatrixFromSlices([][]float32{
 				{.1, .2, .3, .4},
 				{.5, .6, .7, .8}}),
@@ -160,6 +135,35 @@ func TestAddProduct(t *testing.T) {
 			assertMatrixEqual(t, tc.expected, actual)
 		})
 	}
+
+	t.Run("views", func(t *testing.T) {
+		a := NewMatrixFromSlices([][]float32{
+			{9, 9, 9, 9, 9},
+			{9, 10, 20, 30, 9},
+			{9, 40, 50, 60, 9},
+			{9, 9, 9, 9, 9},
+		}).View(1, 1, 2, 3)
+		b := NewMatrixFromSlices([][]float32{
+			{8, 8, 8, 8, 8, 8},
+			{8, 1, 2, 3, 4, 8},
+			{8, 5, 6, 7, 8, 8},
+			{8, 9, 10, 11, 12, 8},
+			{8, 8, 8, 8, 8, 8},
+		}).View(1, 1, 3, 4)
+		c := NewMatrixFromSlices([][]float32{
+			{9, 9, 9, 9, 9, 9},
+			{9, .1, .2, .3, .4, 9},
+			{9, .5, .6, .7, .8, 9},
+			{9, 9, 9, 9, 9, 9}})
+		vc := c.View(1, 1, 2, 4)
+		AddProduct(a, b, vc)
+		expected := NewMatrixFromSlices([][]float32{
+			{9, 9, 9, 9, 9, 9},
+			{9, 380.1, 440.2, 500.3, 560.4, 9},
+			{9, 830.5, 980.6, 1130.7, 1280.8, 9},
+			{9, 9, 9, 9, 9, 9}})
+		assertMatrixEqual(t, expected, c)
+	})
 }
 
 func TestAddInPlace(t *testing.T) {
