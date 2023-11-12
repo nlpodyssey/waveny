@@ -21,6 +21,7 @@ func (m Matrix) View(fromRow, fromColumn, numRows, numColumns int) Matrix {
 		dataColumns: m.dataColumns,
 		viewColumns: numColumns,
 		data:        m.data[start : start+(numRows*m.dataColumns)-(m.dataColumns-numColumns)],
+		scratch:     m.scratch[:numRows*numColumns],
 	}
 }
 

@@ -14,7 +14,9 @@
 
 package mat
 
-import "math"
+import (
+	"math"
+)
 
 //go:nosplit
 func Copy(destination, source Matrix) {
@@ -37,21 +39,38 @@ func (m Matrix) SetZero() {
 //
 //go:nosplit
 func Product(a, b, c Matrix) {
-	bDataColumns := b.dataColumns
-	bData := b.data
-	cRows := c.rows
-	for i := 0; i < cRows; i++ {
-		aRow := a.getRow(i)
-		cRow := c.getRow(i)
+	aData, _ := a.makeContiguousData()
+	bTData, _ := b.makeContiguousTransposedData()
+
+	cData := c.data
+	cIsScratch := c.dataColumns != c.viewColumns
+	if cIsScratch {
+		cData = c.scratch
+	}
+
+	acRows := c.rows
+	aColumns := a.viewColumns
+	cColumns := c.viewColumns
+	bRows := b.rows
+
+	for i := 0; i < acRows; i++ {
+		aRow := aData[i*aColumns : i*aColumns+aColumns]
+		cRow := cData[i*cColumns : i*cColumns+cColumns]
 		for j := range cRow {
 			v := float32(0)
-			bOffset := j
-			for _, aValue := range aRow {
-				v += aValue * bData[bOffset]
-				bOffset += bDataColumns
+
+			bColumn := bTData[j*bRows : j*bRows+bRows]
+			_ = bColumn[len(aRow)-1]
+			for k, aValue := range aRow {
+				v += aValue * bColumn[k]
 			}
+
 			cRow[j] = v
 		}
+	}
+
+	if cIsScratch {
+		c.copyFromContiguousData(cData)
 	}
 }
 
@@ -59,21 +78,106 @@ func Product(a, b, c Matrix) {
 //
 //go:nosplit
 func AddProduct(a, b, c Matrix) {
-	bDataColumns := b.dataColumns
-	bData := b.data
-	cRows := c.rows
-	for i := 0; i < cRows; i++ {
-		aRow := a.getRow(i)
-		cRow := c.getRow(i)
+	aData, _ := a.makeContiguousData()
+	bTData, _ := b.makeContiguousTransposedData()
+	cData, cIsScratch := c.makeContiguousData()
+
+	acRows := c.rows
+	aColumns := a.viewColumns
+	cColumns := c.viewColumns
+	bRows := b.rows
+
+	for i := 0; i < acRows; i++ {
+		aRow := aData[i*aColumns : i*aColumns+aColumns]
+		cRow := cData[i*cColumns : i*cColumns+cColumns]
 		for j := range cRow {
 			v := cRow[j]
-			bOffset := j
-			for _, aValue := range aRow {
-				v += aValue * bData[bOffset]
-				bOffset += bDataColumns
+
+			bColumn := bTData[j*bRows : j*bRows+bRows]
+			_ = bColumn[len(aRow)-1]
+			for k, aValue := range aRow {
+				v += aValue * bColumn[k]
 			}
+
 			cRow[j] = v
 		}
+	}
+
+	if cIsScratch {
+		c.copyFromContiguousData(cData)
+	}
+}
+
+//go:nosplit
+func (m Matrix) makeContiguousData() ([]float32, bool) {
+	if m.dataColumns == m.viewColumns {
+		return m.data, false
+	}
+
+	rows := m.rows
+	viewColumns := m.viewColumns
+	dataColumns := m.dataColumns
+
+	data := m.data
+	scratch := m.scratch
+
+	dataFrom := 0
+	scratchFrom := 0
+	for i := 0; i < rows; i++ {
+		dataTo := dataFrom + viewColumns
+		scratchTo := scratchFrom + viewColumns
+		copy(scratch[scratchFrom:scratchTo], data[dataFrom:dataTo])
+		dataFrom += dataColumns
+		scratchFrom += viewColumns
+	}
+	return scratch, true
+}
+
+//go:nosplit
+func (m Matrix) makeContiguousTransposedData() ([]float32, bool) {
+	if m.rows == 1 || m.viewColumns == 1 {
+		return m.makeContiguousData()
+	}
+
+	rows := m.rows
+	viewColumns := m.viewColumns
+	dataColumns := m.dataColumns
+
+	data := m.data
+	scratch := m.scratch
+
+	dataFrom := 0
+	for i := 0; i < rows; i++ {
+		dataTo := dataFrom + viewColumns
+		dataRow := data[dataFrom:dataTo]
+
+		scratchOffset := i
+		for _, v := range dataRow {
+			scratch[scratchOffset] = v
+			scratchOffset += rows
+		}
+		dataFrom += dataColumns
+	}
+
+	return scratch, true
+}
+
+//go:nosplit
+func (m Matrix) copyFromContiguousData(scratch []float32) {
+	rows := m.rows
+	viewColumns := m.viewColumns
+	dataColumns := m.dataColumns
+
+	data := m.data
+
+	dataFrom := 0
+	scratchFrom := 0
+	for i := 0; i < rows; i++ {
+		dataTo := dataFrom + viewColumns
+		scratchTo := scratchFrom + viewColumns
+		copy(data[dataFrom:dataTo], scratch[scratchFrom:scratchTo])
+		dataFrom += dataColumns
+		scratchFrom += viewColumns
 	}
 }
 

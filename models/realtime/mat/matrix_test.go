@@ -40,6 +40,7 @@ func TestMatrix_Clone(t *testing.T) {
 			111, 112,
 			121, 122,
 		},
+		scratch: make([]float32, 4),
 	}, viewClone)
 	assertMatrixEqual(t, NewMatrixFromSlices([][]float32{
 		{111, 112},

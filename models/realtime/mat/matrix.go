@@ -24,14 +24,17 @@ type Matrix struct {
 	dataColumns int
 	viewColumns int
 	data        []float32
+	scratch     []float32
 }
 
 func NewMatrix(rows, columns int) Matrix {
+	size := rows * columns
 	return Matrix{
 		rows:        rows,
 		dataColumns: columns,
 		viewColumns: columns,
-		data:        make([]float32, rows*columns),
+		data:        make([]float32, size),
+		scratch:     make([]float32, size),
 	}
 }
 
@@ -78,6 +81,7 @@ func (m Matrix) Clone() Matrix {
 		dataColumns: m.viewColumns,
 		viewColumns: m.viewColumns,
 		data:        data,
+		scratch:     make([]float32, len(data)),
 	}
 }
 
