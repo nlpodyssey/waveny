@@ -40,7 +40,8 @@ List of commands:
 
   live
     Process audio input in real-time using the custom Waveny WaveNet
-    model, loaded from a .nam model-data file. It uses PortAudio for I/O.
+    model, loaded from a .nam model-data file. It uses malgo (miniaudio go
+    bindings) for I/O.
 
 For detailed usage and arguments of each command, execute:
 

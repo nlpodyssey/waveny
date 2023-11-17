@@ -59,7 +59,7 @@ Run `waveny help` to see a list of available commands. Here is a recap:
 * `process-torch`: process a WAVE file using a WaveNet SpaGO model, loaded and
   converted from a pre-trained NAM PyTorch/Lightning checkpoint file.
 * `live`: process audio input in real-time using the custom Waveny WaveNet
-  model, loaded from a `.nam` model-data file. It uses PortAudio for I/O.
+  model, loaded from a `.nam` model-data file. It uses [malgo] for I/O.
 
 For detailed usage and arguments of each command, execute:
 
@@ -192,7 +192,7 @@ waveny live -model path/to/model.nam
 ```
 
 This command uses Waveny custom WaveNet implementation to process audio input
-in real-time. I/O is possible thanks to [PortAudio].
+in real-time. I/O is possible thanks to [malgo].
 
 ### Library Integration
 
@@ -238,7 +238,7 @@ allocations, permitting a predictable execution time, suitable for real-time
 processing.
 
 Package `waveny/liveplay` implements real-time processing procedures,
-using [PortAudio] go bindings for I/O.
+using [malgo] ([miniaudio] go bindings) for I/O.
 
 Package `waveny/wave` provides utilities for reading and writing WAVE files.
 
@@ -249,4 +249,5 @@ Package `waveny/wave` provides utilities for reading and writing WAVE files.
 [neural-amp-modeler]: https://github.com/sdatkinson/neural-amp-modeler
 [NeuralAmpModelerCore]: https://github.com/sdatkinson/NeuralAmpModelerCore
 [Eigen]: https://eigen.tuxfamily.org
-[PortAudio]: https://github.com/gordonklaus/portaudio
+[malgo]: https://github.com/gen2brain/malgo
+[miniaudio]: https://miniaud.io/

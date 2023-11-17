@@ -17,7 +17,7 @@ module github.com/nlpodyssey/waveny
 go 1.21.3
 
 require (
-	github.com/gordonklaus/portaudio v0.0.0-20230709114228-aafa478834f5
+	github.com/gen2brain/malgo v0.11.10
 	github.com/nlpodyssey/gopickle v0.2.0
 	github.com/nlpodyssey/spago v1.1.1-0.20231104144211-93ae88e239d8
 )

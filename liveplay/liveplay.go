@@ -16,17 +16,12 @@ package liveplay
 
 import (
 	"fmt"
-	"github.com/gordonklaus/portaudio"
+	"github.com/gen2brain/malgo"
 	"github.com/nlpodyssey/waveny/models/realtime/wavenet"
 	"os"
 	"os/signal"
-)
-
-const (
-	numInputChannels  = 1
-	numOutputChannels = 1
-	sampleRate        = 48000
-	framesPerBuffer   = 256
+	"strings"
+	"unsafe"
 )
 
 type Config struct {
@@ -40,40 +35,31 @@ func Run(config Config) (err error) {
 		return err
 	}
 
-	if err = portaudio.Initialize(); err != nil {
-		return fmt.Errorf("failed to initialize PortAudio: %w", err)
-	}
-	defer func() {
-		if e := portaudio.Terminate(); e != nil && err == nil {
-			err = fmt.Errorf("failed to terminate PortAudio: %w", err)
-		}
-	}()
-
-	process := func(input, output []float32) {
-		model.Process(input, output)
-		model.Finalize(len(input))
-	}
-
-	stream, err := portaudio.OpenDefaultStream(
-		numInputChannels,
-		numOutputChannels,
-		sampleRate,
-		framesPerBuffer,
-		process,
-	)
+	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, logMessage)
 	if err != nil {
-		return fmt.Errorf("failed to open default PortAudio stream: %w", err)
+		return fmt.Errorf("failed to initialize malgo context: %w", err)
 	}
-	defer func() {
-		if e := stream.Close(); e != nil && err == nil {
-			err = fmt.Errorf("failed to close PortAudio stream: %w", err)
-		}
-	}()
+	defer destroyContext(ctx)
 
-	if err = stream.Start(); err != nil {
-		return fmt.Errorf("failed to start PortAudio stream: %w", err)
+	deviceConfig := makeDeviceConfig(config)
+
+	dataProc := func(pOutputSample, pInputSamples []byte, frameCount uint32) {
+		output := unsafe.Slice((*float32)(unsafe.Pointer(&pOutputSample[0])), frameCount)
+		input := unsafe.Slice((*float32)(unsafe.Pointer(&pInputSamples[0])), frameCount)
+		model.Process(input, output)
+		model.Finalize(int(frameCount))
 	}
-	fmt.Println("PortAudio stream started.\nCtrl+C / SIGINT / SIGKILL to quit.")
+
+	deviceCallbacks := malgo.DeviceCallbacks{Data: dataProc}
+	device, err := malgo.InitDevice(ctx.Context, deviceConfig, deviceCallbacks)
+	if err != nil {
+		return fmt.Errorf("failed to initialzie malgo device: %w", err)
+	}
+	defer device.Uninit()
+
+	if err = device.Start(); err != nil {
+		return fmt.Errorf("failed to start malgo device: %w", err)
+	}
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, os.Kill)
@@ -81,4 +67,31 @@ func Run(config Config) (err error) {
 	fmt.Printf("\nSignal: %v\n", sig)
 
 	return nil
+}
+
+func destroyContext(ctx *malgo.AllocatedContext) {
+	if err := ctx.Uninit(); err != nil {
+		logMessage(fmt.Sprintf("failed to uninit malgo context: %v", err))
+	}
+	ctx.Free()
+}
+
+func logMessage(message string) {
+	_, _ = os.Stderr.WriteString(message)
+	if !strings.HasSuffix(message, "\n") {
+		_, _ = os.Stderr.WriteString("\n")
+	}
+}
+
+func makeDeviceConfig(config Config) malgo.DeviceConfig {
+	dc := malgo.DefaultDeviceConfig(malgo.Duplex)
+	dc.SampleRate = 48000
+	dc.PeriodSizeInFrames = uint32(config.FramesPerBuffer)
+	dc.Capture.Format = malgo.FormatF32
+	dc.Capture.Channels = 1
+	dc.Playback.Format = malgo.FormatF32
+	dc.Playback.Channels = 1
+	dc.NoClip = 1
+	dc.NoPreSilencedOutputBuffer = 1
+	return dc
 }
